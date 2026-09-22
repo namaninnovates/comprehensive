@@ -137,9 +137,14 @@ body {
 
 .logo-text h1 {
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--text);
+}
+
+.logo-text h1 strong,
+.setup-hero h2 strong {
+  font-weight: 800;
 }
 
 .logo-text span {
