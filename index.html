@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comprehensive Exam Quiz System | CS & Business Systems</title>
+  <meta name="description" content="Interactive quiz platform for Computer Science and Business Systems Comprehensive Examination with customizable 50-page chunk selection, question jumbling, and persistent test history.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Top App Navigation Bar -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo-group" id="nav-logo-home">
+        <div class="logo-icon">Q</div>
+        <div class="logo-text">
+          <h1>CSBS Quiz Portal</h1>
+          <span>Comprehensive Exam Prep (1,448 Questions)</span>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <button id="nav-btn-setup" class="nav-btn active" title="Create a new quiz">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+          New Quiz
+        </button>
+        <button id="nav-btn-history" class="nav-btn" title="View saved test results">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"></path><circle cx="12" cy="12" r="10"></circle></svg>
+          Test History <span id="nav-history-badge" class="badge badge-page" style="margin-left: 4px; display:none;">0</span>
+        </button>
+        <button id="nav-btn-bank" class="nav-btn" title="Explore question repository">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          Question Bank
+        </button>
+        <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Theme">
+          <span id="theme-icon">🌙</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Application Container -->
+  <main class="main-content">
+
+    <!-- ====================================================================
+         VIEW 1: QUIZ SETUP & CONFIGURATION
+         ==================================================================== -->
+    <section id="view-setup" class="view-section active">
+      <div class="setup-hero">
+        <h2>CSBS Comprehensive Exam</h2>
+        <p>Practice questions by page range or take timed exams with instant results.</p>
+      </div>
+
+      <!-- Exam Simulation Card -->
+      <div class="card simulation-card" style="margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; border: 1px solid var(--border);">
+        <div>
+          <div style="font-size: 1.05rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 0.5rem;">
+            <span>⏱️</span> Full Exam Simulation (2 Hours • 100 Questions)
+          </div>
+          <p style="font-size: 0.84rem; color: var(--text-muted); margin-top: 0.2rem;">
+            Randomly selects 100 questions from the 400-page bank with an active 2-hour countdown timer.
+          </p>
+        </div>
+        <button id="btn-start-simulation" class="btn-start" style="width: auto; padding: 0.65rem 1.4rem; font-size: 0.9rem;">
+          Simulate Full Exam
+        </button>
+      </div>
+
+      <div class="setup-grid">
+        <!-- Left Column: Page Range Selector -->
+        <div class="card">
+          <div class="card-title">Page Range</div>
+          <p class="card-subtitle">Choose 50-page increments, presets, or a custom range.</p>
+
+          <!-- Quick Presets -->
+          <div class="preset-bar">
+            <button class="preset-chip active" data-preset="1-50">1 – 50</button>
+            <button class="preset-chip" data-preset="1-100">1 – 100</button>
+            <button class="preset-chip" data-preset="101-200">101 – 200</button>
+            <button class="preset-chip" data-preset="201-300">201 – 300</button>
+            <button class="preset-chip" data-preset="301-400">301 – 400</button>
+            <button class="preset-chip" data-preset="101-400">101 – 400</button>
+            <button class="preset-chip" data-preset="all">All Pages</button>
+            <button class="preset-chip" data-preset="clear" style="color: var(--danger);">Clear</button>
+          </div>
+
+          <!-- 50-Page Multiple Chunks (Clickable cards) -->
+          <div class="chunk-grid" id="chunk-grid-container">
+            <!-- Rendered dynamically by js/app.js -->
+          </div>
+
+          <!-- Custom Range Input -->
+          <div class="custom-range-box">
+            <label for="input-custom-start">Custom Range:</label>
+            <div class="range-inputs">
+              <input type="number" id="input-custom-start" class="page-num-input" min="1" max="400" placeholder="1" value="1">
+              <span style="color: var(--text-muted); font-size: 0.85rem;">to</span>
+              <input type="number" id="input-custom-end" class="page-num-input" min="1" max="400" placeholder="400" value="50">
+              <button id="btn-apply-custom-range" class="apply-range-btn">Apply</button>
+            </div>
+            <span id="range-validation-msg" style="font-size: 0.78rem; color: var(--warning); display: none;"></span>
+          </div>
+        </div>
+
+        <!-- Right Column: Quiz Settings & Launch -->
+        <div class="card">
+          <div class="card-title">Options</div>
+          <p class="card-subtitle">Mode, randomization, and question limits.</p>
+
+          <!-- Test Mode (Exam vs Practice) -->
+          <div class="setting-item">
+            <span class="setting-label">Quiz Mode</span>
+            <div class="pill-options" id="mode-pills">
+              <button class="pill-opt active" data-mode="exam" title="Timed exam with final score evaluation">Exam Mode</button>
+              <button class="pill-opt" data-mode="practice" title="Immediate feedback after every selection">Practice Mode</button>
+            </div>
+          </div>
+
+          <!-- Jumble / Shuffle Questions Toggle -->
+          <div class="setting-item">
+            <label class="switch-container" for="toggle-jumble-questions">
+              <div>
+                <span class="setting-label" style="margin-bottom: 0;">Jumble Questions</span>
+                <span class="setting-desc">Randomize the order of questions</span>
+              </div>
+              <div class="switch">
+                <input type="checkbox" id="toggle-jumble-questions" checked>
+                <span class="slider"></span>
+              </div>
+            </label>
+          </div>
+
+          <!-- Jumble Options (A,B,C,D) Toggle -->
+          <div class="setting-item">
+            <label class="switch-container" for="toggle-jumble-options">
+              <div>
+                <span class="setting-label" style="margin-bottom: 0;">Jumble Choices</span>
+                <span class="setting-desc">Randomize options order (A-D)</span>
+              </div>
+              <div class="switch">
+                <input type="checkbox" id="toggle-jumble-options">
+                <span class="slider"></span>
+              </div>
+            </label>
+          </div>
+
+          <!-- Question Count Filter -->
+          <div class="setting-item">
+            <span class="setting-label">Number of Questions</span>
+            <div class="pill-options" id="count-pills">
+              <button class="pill-opt" data-count="20">20</button>
+              <button class="pill-opt" data-count="30">30</button>
+              <button class="pill-opt" data-count="50">50</button>
+              <button class="pill-opt" data-count="100">100</button>
+              <button class="pill-opt active" data-count="all">All Available</button>
+            </div>
+          </div>
+
+          <!-- Timer Setting -->
+          <div class="setting-item">
+            <span class="setting-label">Timer</span>
+            <div class="pill-options" id="timer-pills">
+              <button class="pill-opt active" data-timer="stopwatch">Stopwatch</button>
+              <button class="pill-opt" data-timer="7200">2 Hours</button>
+              <button class="pill-opt" data-timer="3600">1 Hour</button>
+              <button class="pill-opt" data-timer="none">Untimed</button>
+            </div>
+          </div>
+
+          <!-- Summary & Start Button -->
+          <div class="start-box">
+            <div id="selection-summary-count" class="question-stats-line">Loading questions...</div>
+            <div id="selection-summary-pages" class="pages-summary-line">Pages 1 – 50 selected</div>
+            <button id="btn-start-quiz" class="btn-start">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              Start Quiz Now
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW 2: ACTIVE QUIZ INTERFACE
+         ==================================================================== -->
+    <section id="view-quiz" class="view-section">
+      <!-- Toolbar -->
+      <div class="quiz-toolbar">
+        <div class="quiz-badges">
+          <span id="quiz-badge-pages" class="badge badge-page">Pages 1–50</span>
+          <span id="quiz-badge-mode" class="badge badge-mode">Exam Mode</span>
+          <span id="quiz-badge-qpage" class="badge" style="background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-muted);">PDF Page: 1</span>
+        </div>
+        <div class="timer-box" id="quiz-timer-display" title="Elapsed Time">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span id="timer-text">00:00</span>
+        </div>
+      </div>
+
+      <!-- Progress Track -->
+      <div class="quiz-progress-wrapper">
+        <div class="progress-info">
+          <span id="quiz-progress-label">Question 1 of 50</span>
+          <span id="quiz-progress-percent">0% Completed</span>
+        </div>
+        <div class="progress-track">
+          <div id="quiz-progress-bar" class="progress-bar"></div>
+        </div>
+      </div>
+
+      <!-- Main Layout: Question + Side Palette -->
+      <div class="quiz-layout">
+        <!-- Center/Left: Current Question Card -->
+        <div class="question-main-col">
+          <div class="question-card" id="active-question-card">
+            <div class="question-header">
+              <span id="q-number-badge" class="question-num-tag">Question 1</span>
+              <button id="btn-flag-question" class="btn-flag" title="Flag this question to review later">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+                <span id="flag-btn-text">Flag for Review</span>
+              </button>
+            </div>
+
+            <!-- Question statement (Formatted / Snippet) -->
+            <div id="q-statement" class="question-text">Question statement loading...</div>
+
+            <!-- Optional embedded diagram image -->
+            <div id="q-image-container" class="question-image-wrap" style="display: none;">
+              <img id="q-image" class="question-image" alt="Question diagram">
+            </div>
+
+            <!-- Multiple Choice Options -->
+            <div class="options-list" id="q-options-container">
+              <!-- Rendered dynamically -->
+            </div>
+
+            <!-- Practice Mode Instant Feedback Alert -->
+            <div id="practice-feedback-box" class="practice-feedback">
+              <!-- Rendered in practice mode -->
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons -->
+          <div class="quiz-actions">
+            <div style="display: flex; gap: 0.75rem;">
+              <button id="btn-prev-question" class="action-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                Previous
+              </button>
+              <button id="btn-next-question" class="action-btn">
+                Next
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem;">
+              <button id="btn-clear-answer" class="action-btn" style="color: var(--text-muted);" title="Clear selected choice">
+                Clear Choice
+              </button>
+              <button id="btn-submit-exam" class="action-btn btn-submit">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Finish & Submit
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Question Navigator Palette -->
+        <aside class="palette-card card">
+          <div class="card-title" style="font-size: 1.05rem;">Question Palette</div>
+          <p class="card-subtitle" id="palette-stats-summary" style="margin-bottom: 0.85rem;">0 Answered • 0 Flagged</p>
+          
+          <div class="palette-grid" id="palette-grid-items">
+            <!-- Rendered dynamically (1 .. N) -->
+          </div>
+
+          <div class="palette-legend">
+            <div class="legend-item"><span class="legend-dot dot-answered"></span> Answered</div>
+            <div class="legend-item"><span class="legend-dot dot-flagged"></span> Flagged</div>
+            <div class="legend-item"><span class="legend-dot dot-current"></span> Current</div>
+            <div class="legend-item"><span class="legend-dot dot-unanswered"></span> Unanswered</div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW 3: RESULTS & SCORECARD REVIEW
+         ==================================================================== -->
+    <section id="view-results" class="view-section">
+      <div class="results-card card">
+        <h2 id="results-headline" style="font-size: 2rem; margin-bottom: 0.5rem;">Test Results</h2>
+        <p id="results-subheadline" style="color: var(--text-muted); font-size: 1rem;">Here is how you performed on this session</p>
+
+        <div class="score-banner">
+          <div class="score-circle" id="score-circle-elem" style="--percent: 0;">
+            <div class="score-circle-inner">
+              <span id="score-pct-text" class="score-pct">0%</span>
+              <span class="score-label" id="score-grade-badge">Accuracy</span>
+            </div>
+          </div>
+
+          <div class="score-stats-grid">
+            <div class="stat-box correct-stat">
+              <span id="stat-correct-count" class="val">0</span>
+              <span class="lbl">Correct</span>
+            </div>
+            <div class="stat-box incorrect-stat">
+              <span id="stat-incorrect-count" class="val">0</span>
+              <span class="lbl">Incorrect</span>
+            </div>
+            <div class="stat-box skipped-stat">
+              <span id="stat-skipped-count" class="val">0</span>
+              <span class="lbl">Unanswered</span>
+            </div>
+            <div class="stat-box time-stat">
+              <span id="stat-time-taken" class="val">00:00</span>
+              <span class="lbl">Time Taken</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="results-cta">
+          <button id="btn-retake-entire" class="action-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+            Retake Entire Quiz
+          </button>
+          <button id="btn-retake-missed" class="action-btn" style="border-color: var(--danger); color: var(--danger);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+            Retake Missed Only (<span id="retake-missed-count">0</span>)
+          </button>
+          <button id="btn-new-quiz-setup" class="action-btn btn-submit">
+            Start New Quiz
+          </button>
+        </div>
+      </div>
+
+      <!-- Question-by-Question Review -->
+      <div class="review-filter-bar">
+        <h3 style="font-size: 1.3rem;">Detailed Question Review</h3>
+        <div class="filter-btn-group">
+          <button class="rev-filter-btn active" data-filter="all">All (<span id="rev-filter-all-count">0</span>)</button>
+          <button class="rev-filter-btn" data-filter="incorrect">Incorrect (<span id="rev-filter-wrong-count">0</span>)</button>
+          <button class="rev-filter-btn" data-filter="correct">Correct (<span id="rev-filter-right-count">0</span>)</button>
+          <button class="rev-filter-btn" data-filter="flagged">Flagged (<span id="rev-filter-flagged-count">0</span>)</button>
+        </div>
+      </div>
+
+      <div class="review-list" id="review-questions-container">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW 4: TEST HISTORY & SAVED RESULTS
+         ==================================================================== -->
+    <section id="view-history" class="view-section">
+      <div class="history-header">
+        <div>
+          <h2 style="font-size: 1.85rem; font-weight: 800;">Saved Test History</h2>
+          <p style="color: var(--text-muted);">Review your previous test scores, progress, and detailed question answer logs.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+          <button id="btn-clear-all-history" class="action-btn" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.3);">
+            Clear All History
+          </button>
+          <button id="btn-history-new-quiz" class="action-btn btn-submit">
+            Take Another Test
+          </button>
+        </div>
+      </div>
+
+      <!-- History Summary Stats -->
+      <div class="history-stats-bar">
+        <div class="card stat-box">
+          <span id="hist-total-tests" class="val" style="color: var(--primary);">0</span>
+          <span class="lbl">Tests Completed</span>
+        </div>
+        <div class="card stat-box">
+          <span id="hist-avg-score" class="val" style="color: var(--success);">0%</span>
+          <span class="lbl">Average Accuracy</span>
+        </div>
+        <div class="card stat-box">
+          <span id="hist-total-questions" class="val" style="color: var(--info);">0</span>
+          <span class="lbl">Questions Attempted</span>
+        </div>
+        <div class="card stat-box">
+          <span id="hist-best-score" class="val" style="color: var(--accent);">0%</span>
+          <span class="lbl">Best Score</span>
+        </div>
+      </div>
+
+      <!-- History Table -->
+      <div class="history-table-wrap">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date & Time</th>
+              <th>Page Range</th>
+              <th>Mode</th>
+              <th>Score</th>
+              <th>Accuracy</th>
+              <th>Duration</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body">
+            <!-- Rendered dynamically by js/history.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW 5: QUESTION BANK / SEARCH BROWSER
+         ==================================================================== -->
+    <section id="view-bank" class="view-section">
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.85rem; font-weight: 800;">Question Repository</h2>
+        <p style="color: var(--text-muted);">Browse all 1,448 exam questions, search topics, code, or inspect answers directly.</p>
+      </div>
+
+      <div class="bank-controls">
+        <input type="text" id="bank-search-input" class="search-input" placeholder="Search questions, code snippets, topics, or keywords...">
+        <select id="bank-page-filter" class="bank-page-filter">
+          <option value="all">All Pages (1 – 400)</option>
+          <option value="1-50">Pages 1 – 50</option>
+          <option value="51-100">Pages 51 – 100</option>
+          <option value="101-150">Pages 101 – 150</option>
+          <option value="151-200">Pages 151 – 200</option>
+          <option value="201-250">Pages 201 – 250</option>
+          <option value="251-300">Pages 251 – 300</option>
+          <option value="301-350">Pages 301 – 350</option>
+          <option value="351-400">Pages 351 – 400</option>
+        </select>
+        <span id="bank-count-indicator" style="align-self: center; font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">Showing 1,448 questions</span>
+      </div>
+
+      <div class="bank-list" id="bank-list-container">
+        <!-- Rendered dynamically by js/bank.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Minimalist App Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>Developed by <strong>namaninnovates</strong></p>
+    </div>
+  </footer>
+
+  <!-- Confirm Submit Modal -->
+  <div class="modal-overlay" id="submit-confirm-modal">
+    <div class="modal-content">
+      <h3 class="modal-title">Submit Examination?</h3>
+      <p class="modal-text" id="submit-modal-summary">You have answered 0 of 50 questions.</p>
+      <div class="modal-buttons">
+        <button id="btn-cancel-submit" class="action-btn">Keep Going</button>
+        <button id="btn-confirm-submit" class="action-btn btn-submit">Yes, Submit Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load Extracted Data -->
+  <script src="data/questions.js"></script>
+  <!-- Application Logic Modules -->
+  <script src="js/history.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/bank.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
