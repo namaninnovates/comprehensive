@@ -255,6 +255,7 @@ window.App = (function () {
     };
 
     if (window.QuizModule) {
+      setQuizActive(true);  // arm the exit guard
       window.QuizModule.startQuiz(config);
     }
   }
@@ -376,6 +377,24 @@ window.App = (function () {
     if (startBtn) startBtn.disabled = false;
   }
 
+  /* --------------------------------------------------------------------------
+     Exit Guard — prevent accidental tab/window close during an active quiz
+     -------------------------------------------------------------------------- */
+  let _quizActive = false;
+
+  function setQuizActive(active) {
+    _quizActive = active;
+  }
+
+  window.addEventListener('beforeunload', (e) => {
+    if (_quizActive) {
+      e.preventDefault();
+      // Most browsers show their own generic message; the returnValue is required
+      // for older browsers but ignored visually in modern ones.
+      e.returnValue = 'Your quiz is in progress. Are you sure you want to leave?';
+    }
+  });
+
   function handleStartQuiz() {
     const ranges = getActiveRanges();
     if (ranges.length === 0) {
@@ -410,6 +429,7 @@ window.App = (function () {
     };
 
     if (window.QuizModule) {
+      setQuizActive(true);  // arm the exit guard
       window.QuizModule.startQuiz(config);
     }
   }
@@ -494,7 +514,8 @@ window.App = (function () {
   return {
     init,
     switchView,
-    startSimulation
+    startSimulation,
+    setQuizActive   // called by QuizModule when quiz ends/is submitted
   };
 })();
 

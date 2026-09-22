@@ -500,6 +500,11 @@ window.QuizModule = (function () {
     stopTimer();
     session.isCompleted = true;
 
+    // Disarm the tab-close guard — quiz is done
+    if (window.App && window.App.setQuizActive) {
+      window.App.setQuizActive(false);
+    }
+
     let correctCount = 0;
     let incorrectCount = 0;
     let skippedCount = 0;
