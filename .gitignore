@@ -1,0 +1,45 @@
+# ============================================================
+# Comprehensive Exam Quiz — .gitignore
+# ============================================================
+
+# --- Dev / Extraction Scripts -----------------------------------
+# Python extractor used to build questions.js from the PDF.
+# Not needed for deployment; keep locally.
+scripts/
+
+# --- Raw JSON (source-of-truth is data/questions.js) -----------
+# questions.json is only a fetch fallback; questions.js is what
+# the browser loads. Exclude the JSON to avoid doubling repo size.
+data/questions.json
+
+# --- Python ---------------------------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# --- macOS ----------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# --- Editor / IDE ---------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Logs & Misc ----------------------------------------------
+*.log
+npm-debug.log*

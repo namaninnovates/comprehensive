@@ -23,19 +23,11 @@ window.App = (function () {
   ];
 
   async function ensureQuestionsLoaded() {
+    // questions.js is loaded via <script> tag and populates window.COMPREHENSIVE_QUESTIONS
     if (window.COMPREHENSIVE_QUESTIONS && window.COMPREHENSIVE_QUESTIONS.length > 0) {
       return true;
     }
-    // Fallback to fetch questions.json
-    try {
-      const resp = await fetch('data/questions.json');
-      if (resp.ok) {
-        window.COMPREHENSIVE_QUESTIONS = await resp.json();
-        return true;
-      }
-    } catch (e) {
-      console.warn('Could not fetch questions.json:', e);
-    }
+    console.error('Question bank not loaded. Ensure data/questions.js is present.');
     return false;
   }
 
@@ -227,8 +219,44 @@ window.App = (function () {
       });
     });
 
+    // Timer pills
+    document.querySelectorAll('#timer-pills .pill-opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#timer-pills .pill-opt').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedTimer = btn.dataset.timer;
+      });
+    });
+
+    // Start Simulation Button
+    document.getElementById('btn-start-simulation')?.addEventListener('click', startSimulation);
+
     // Start Quiz Button
     document.getElementById('btn-start-quiz')?.addEventListener('click', handleStartQuiz);
+  }
+
+  function startSimulation() {
+    const all = window.COMPREHENSIVE_QUESTIONS || [];
+    if (!all.length) {
+      alert('Question database is loading, please try again in a moment.');
+      return;
+    }
+
+    const config = {
+      ranges: [{ start: 1, end: 400 }],
+      pageRangeDesc: 'Exam Simulation (100 Questions • 2h)',
+      jumbleQuestions: true,
+      jumbleOptions: false,
+      countLimit: 100,
+      mode: 'exam',
+      timerType: 'countdown',
+      countdownSeconds: 7200, // 2 Hours = 7200 seconds
+      isSimulation: true
+    };
+
+    if (window.QuizModule) {
+      window.QuizModule.startQuiz(config);
+    }
   }
 
   function applyPreset(preset) {
@@ -358,13 +386,27 @@ window.App = (function () {
     const jumbleQ = document.getElementById('toggle-jumble-questions')?.checked ?? true;
     const jumbleO = document.getElementById('toggle-jumble-options')?.checked ?? false;
 
+    let timerType = 'stopwatch';
+    let countdownSecs = null;
+    if (selectedTimer === '7200') {
+      timerType = 'countdown';
+      countdownSecs = 7200;
+    } else if (selectedTimer === '3600') {
+      timerType = 'countdown';
+      countdownSecs = 3600;
+    } else if (selectedTimer === 'none') {
+      timerType = 'none';
+    }
+
     const config = {
       ranges: ranges,
       pageRangeDesc: getPageRangeDescription(),
       jumbleQuestions: jumbleQ,
       jumbleOptions: jumbleO,
       countLimit: selectedCountLimit,
-      mode: selectedMode
+      mode: selectedMode,
+      timerType: timerType,
+      countdownSeconds: countdownSecs
     };
 
     if (window.QuizModule) {
@@ -451,7 +493,8 @@ window.App = (function () {
 
   return {
     init,
-    switchView
+    switchView,
+    startSimulation
   };
 })();
 
