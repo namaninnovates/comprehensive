@@ -84,7 +84,7 @@ window.App = (function () {
 
     const icon = document.getElementById('theme-icon');
     if (icon) {
-      icon.textContent = theme === 'dark' ? '🌙' : '☀️';
+      icon.textContent = theme === 'dark' ? 'D' : 'L';
     }
   }
 

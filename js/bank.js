@@ -115,7 +115,7 @@ window.BankModule = (function () {
                 <div style="background: ${bg}; border: 1px solid ${border}; color: ${color}; font-weight: ${fw}; padding: 0.65rem 0.85rem; border-radius: var(--radius-sm); font-size: 0.88rem; display: flex; align-items: center; gap: 0.5rem;">
                   <span style="font-weight: 700; width: 20px;">${letters[oIdx] || oIdx + 1}.</span>
                   <span style="flex: 1;">${escapeHtml(opt)}</span>
-                  ${isCorrect ? '<span>✓</span>' : ''}
+                  ${isCorrect ? '<span style="font-size:0.75rem;font-weight:700;">correct</span>' : ''}
                 </div>
               `;
             }).join('')}
