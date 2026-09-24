@@ -135,8 +135,8 @@
       "If firms only act in their own self-interest, customers might not like the image that the company portrays.",
       "If firms only act in their own self-interest and inflict harm on stakeholders, then society might withdraw its support"
     ],
-    "correctIndex": 0,
-    "correctAnswer": "If firms only act in their own self-interest, employees may feel exploited.",
+    "correctIndex": 3,
+    "correctAnswer": "If firms only act in their own self-interest and inflict harm on stakeholders, then society might withdraw its support",
     "image": null
   },
   {
@@ -2319,8 +2319,8 @@
       "regular expression",
       "both finite automata and regular expression"
     ],
-    "correctIndex": 0,
-    "correctAnswer": "automata",
+    "correctIndex": 1,
+    "correctAnswer": "finite automata",
     "image": null
   },
   {
@@ -2445,8 +2445,8 @@
       "Data protection by design",
       "Organisational data protection"
     ],
-    "correctIndex": 0,
-    "correctAnswer": "Data protection by default",
+    "correctIndex": 2,
+    "correctAnswer": "Data protection by design",
     "image": null
   },
   {
@@ -2725,8 +2725,8 @@
       "97",
       "Error"
     ],
-    "correctIndex": 0,
-    "correctAnswer": "apple",
+    "correctIndex": 1,
+    "correctAnswer": "a",
     "image": null
   },
   {
@@ -3075,8 +3075,8 @@
       "When 2 or more computers are in the same building",
       "A group of 3 or more devices that communicate"
     ],
-    "correctIndex": 0,
-    "correctAnswer": "A group of 1 or more devices that communicate",
+    "correctIndex": 1,
+    "correctAnswer": "A group of 2 or more devices that communicate",
     "image": null
   },
   {
@@ -3089,8 +3089,8 @@
       "Formal standards and policies comprised of rules, procedures and formats",
       "None of the above"
     ],
-    "correctIndex": 0,
-    "correctAnswer": "Formal standards and policies comprised of memes",
+    "correctIndex": 2,
+    "correctAnswer": "Formal standards and policies comprised of rules, procedures and formats",
     "image": null
   },
   {
@@ -4764,8 +4764,8 @@
       "Host",
       "VPN"
     ],
-    "correctIndex": 1,
-    "correctAnswer": "Firewall",
+    "correctIndex": 3,
+    "correctAnswer": "VPN",
     "image": null
   },
   {
@@ -5460,8 +5460,8 @@
       "APPLICATION LAYER",
       "Both Session and Presentation layer"
     ],
-    "correctIndex": 0,
-    "correctAnswer": "SESSION LAYER",
+    "correctIndex": 3,
+    "correctAnswer": "Both Session and Presentation layer",
     "image": null
   },
   {
@@ -7873,8 +7873,8 @@
       "DHCP (Dynamic Host Configuration Protocol)",
       "FTP (File transfer protocol)"
     ],
-    "correctIndex": 1,
-    "correctAnswer": "ARP (Address Resolution Protocol)",
+    "correctIndex": 2,
+    "correctAnswer": "DHCP (Dynamic Host Configuration Protocol)",
     "image": null
   },
   {
@@ -8305,8 +8305,8 @@
       "Either BFS or DFS",
       "The statement is incomplete"
     ],
-    "correctIndex": 3,
-    "correctAnswer": "The statement is incomplete",
+    "correctIndex": 1,
+    "correctAnswer": "BFS",
     "image": null
   },
   {
@@ -8319,8 +8319,8 @@
       "throw;",
       "All of the above"
     ],
-    "correctIndex": 1,
-    "correctAnswer": "throw exception;",
+    "correctIndex": 3,
+    "correctAnswer": "All of the above",
     "image": null
   },
   {
@@ -8333,8 +8333,8 @@
       "only (ii) and (iii)",
       "(i), (ii) and (iii)"
     ],
-    "correctIndex": 0,
-    "correctAnswer": "only (i)",
+    "correctIndex": 1,
+    "correctAnswer": "only (i) and (iii)",
     "image": null
   },
   {
@@ -8389,8 +8389,8 @@
       "Time Study, Motion Study and Fatigue Study.",
       "Time Study, Motivation Study and Fatigue Study."
     ],
-    "correctIndex": 1,
-    "correctAnswer": "Time Study, Motion Study and Fatal Study.",
+    "correctIndex": 2,
+    "correctAnswer": "Time Study, Motion Study and Fatigue Study.",
     "image": null
   },
   {
@@ -8949,8 +8949,8 @@
       "Feedback Control",
       "Control measure"
     ],
-    "correctIndex": 0,
-    "correctAnswer": "Feed Forward Control",
+    "correctIndex": 1,
+    "correctAnswer": "Concurrent Control",
     "image": null
   },
   {
@@ -10069,8 +10069,8 @@
       "Binary relationship",
       "None of these"
     ],
-    "correctIndex": 3,
-    "correctAnswer": "None of these",
+    "correctIndex": 0,
+    "correctAnswer": "Recursive relationship",
     "image": null
   },
   {
@@ -11075,8 +11075,8 @@
       "Given two arbitrary context-free grammars, G and G , it is 1 2 undecidable with L(G ) = 1 L(G ) 2",
       "Given two regular grammars G 1 and G , it is undecidable 2 whether L(G ) = L(G ) 1 2"
     ],
-    "correctIndex": 1,
-    "correctAnswer": "Determining whether a context-free grammar is ambiguous is undecidable.",
+    "correctIndex": 3,
+    "correctAnswer": "Given two regular grammars G 1 and G , it is undecidable 2 whether L(G ) = L(G ) 1 2",
     "image": null
   },
   {
@@ -13469,8 +13469,8 @@
       "Valence",
       "Values"
     ],
-    "correctIndex": 0,
-    "correctAnswer": "Expectancy",
+    "correctIndex": 1,
+    "correctAnswer": "Instrumentality",
     "image": null
   },
   {
@@ -13553,8 +13553,8 @@
       "Forming, Norming, Performing, Storming, Adjourning",
       "Forming, Storming, Norming, Performing, Adjourning"
     ],
-    "correctIndex": 0,
-    "correctAnswer": "Forming, Performing, Storming, Norming, Adjourning",
+    "correctIndex": 3,
+    "correctAnswer": "Forming, Storming, Norming, Performing, Adjourning",
     "image": null
   },
   {
@@ -16307,8 +16307,8 @@
       "Structure elements are stored in contiguous memory locations",
       "Structure elements are stored in detached memory locations"
     ],
-    "correctIndex": 0,
-    "correctAnswer": "Structure elements are stored on random free memory locations",
+    "correctIndex": 2,
+    "correctAnswer": "Structure elements are stored in contiguous memory locations",
     "image": null
   },
   {
@@ -16531,8 +16531,8 @@
       "BOTH NETWORK ADDRESS and HOST ADDRESS",
       "MAC ADDRESS NETWORK"
     ],
-    "correctIndex": 0,
-    "correctAnswer": "NETWORK ADDRESS",
+    "correctIndex": 2,
+    "correctAnswer": "BOTH NETWORK ADDRESS and HOST ADDRESS",
     "image": null
   },
   {
@@ -16671,8 +16671,8 @@
       "Transport layer",
       ". Data link layer"
     ],
-    "correctIndex": 0,
-    "correctAnswer": "Network layer",
+    "correctIndex": 2,
+    "correctAnswer": "Transport layer",
     "image": null
   },
   {
@@ -16727,8 +16727,8 @@
       "Merge sort",
       "Selection sort"
     ],
-    "correctIndex": 3,
-    "correctAnswer": "Selection sort",
+    "correctIndex": 1,
+    "correctAnswer": "Insertion sort",
     "image": null
   },
   {
@@ -17331,8 +17331,8 @@
       "LAN",
       "SMTP"
     ],
-    "correctIndex": 1,
-    "correctAnswer": "TCP",
+    "correctIndex": 2,
+    "correctAnswer": "LAN",
     "image": null
   },
   {
