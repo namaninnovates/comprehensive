@@ -4,12 +4,29 @@
  */
 
 window.App = (function () {
+  // State for question selection mode ('topic' or 'page')
+  let selectionType = 'topic';
+  const selectedTopics = new Set();
+
   // State for page chunk selection
   const selectedChunks = new Set([0]); // Default: first chunk (1-50)
   let customRange = null; // null or { start: 1, end: 50 }
   let selectedMode = 'exam';
   let selectedCountLimit = 'all';
   let selectedTimer = 'stopwatch';
+
+  const TOPICS = [
+    { id: 'Management & Business Systems', label: 'Management & Business', short: 'MGMT' },
+    { id: 'Programming & OOP', label: 'Programming & OOP (C/C++)', short: 'OOP' },
+    { id: 'Data Structures & Algorithms', label: 'Data Structures & Algorithms', short: 'DSA' },
+    { id: 'Theory of Computation', label: 'Theory of Computation (TOC)', short: 'TOC' },
+    { id: 'Computer Networks', label: 'Computer Networks (CN)', short: 'CN' },
+    { id: 'Cyber Security & Privacy', label: 'Cyber Security & Privacy', short: 'SEC' },
+    { id: 'Database Management Systems', label: 'Database Systems (DBMS)', short: 'DBMS' },
+    { id: 'Operating Systems', label: 'Operating Systems (OS)', short: 'OS' },
+    { id: 'Computer Architecture & Digital Logic', label: 'Computer Architecture', short: 'ARCH' },
+    { id: 'Software Engineering & Testing', label: 'Software Engineering & Testing', short: 'SE' }
+  ];
 
   const CHUNKS = [
     { start: 1, end: 50, label: '1 – 50' },
@@ -21,6 +38,16 @@ window.App = (function () {
     { start: 301, end: 350, label: '301 – 350' },
     { start: 351, end: 400, label: '351 – 400' }
   ];
+
+  function encodeId(str) {
+    return String(str).replace(/[^a-zA-Z0-9]/g, '_');
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
 
   async function ensureQuestionsLoaded() {
     // questions.js is loaded via <script> tag and populates window.COMPREHENSIVE_QUESTIONS
@@ -41,6 +68,10 @@ window.App = (function () {
     // Ensure questions are ready
     await ensureQuestionsLoaded();
 
+    // Default: select all topics
+    TOPICS.forEach(t => selectedTopics.add(t.id));
+
+    renderTopicGrid();
     renderChunkGrid();
 
     // Initialize sub-modules
@@ -133,6 +164,123 @@ window.App = (function () {
   }
 
   /* --------------------------------------------------------------------------
+     Topic Wise Selection UI
+     -------------------------------------------------------------------------- */
+  function setSelectionType(type) {
+    selectionType = type;
+
+    const tabTopic = document.getElementById('tab-select-topic');
+    const tabPage = document.getElementById('tab-select-page');
+    const panelTopic = document.getElementById('panel-select-topic');
+    const panelPage = document.getElementById('panel-select-page');
+
+    if (type === 'topic') {
+      tabTopic?.classList.add('active');
+      tabPage?.classList.remove('active');
+      if (panelTopic) panelTopic.style.display = 'block';
+      if (panelPage) panelPage.style.display = 'none';
+    } else {
+      tabPage?.classList.add('active');
+      tabTopic?.classList.remove('active');
+      if (panelPage) panelPage.style.display = 'block';
+      if (panelTopic) panelTopic.style.display = 'none';
+    }
+
+    updateSelectionSummary();
+  }
+
+  function renderTopicGrid() {
+    const container = document.getElementById('topic-grid-container');
+    if (!container) return;
+
+    const all = window.COMPREHENSIVE_QUESTIONS || [];
+    const counts = {};
+    all.forEach(q => {
+      const t = q.topic || 'Other';
+      counts[t] = (counts[t] || 0) + 1;
+    });
+
+    container.innerHTML = TOPICS.map(topic => {
+      const count = counts[topic.id] || 0;
+      const isSelected = selectedTopics.has(topic.id);
+
+      return `
+        <button type="button" class="topic-card ${isSelected ? 'selected' : ''}" data-topic-id="${escapeHtml(topic.id)}" id="topic-card-${encodeId(topic.id)}">
+          <div class="topic-info">
+            <span class="topic-name">${escapeHtml(topic.label)}</span>
+            <span class="topic-count">${count} Questions</span>
+          </div>
+          <span class="topic-check-icon">${isSelected ? '✓' : ''}</span>
+        </button>
+      `;
+    }).join('');
+
+    container.querySelectorAll('.topic-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const topicId = card.dataset.topicId;
+        toggleTopic(topicId);
+      });
+    });
+  }
+
+  function toggleTopic(topicId) {
+    if (selectedTopics.has(topicId)) {
+      selectedTopics.delete(topicId);
+    } else {
+      selectedTopics.add(topicId);
+    }
+
+    updateTopicPresetChips();
+    updateTopicUI();
+    updateSelectionSummary();
+  }
+
+  function updateTopicUI() {
+    TOPICS.forEach(topic => {
+      const card = document.getElementById(`topic-card-${encodeId(topic.id)}`);
+      if (!card) return;
+      const check = card.querySelector('.topic-check-icon');
+      if (selectedTopics.has(topic.id)) {
+        card.classList.add('selected');
+        if (check) check.textContent = '✓';
+      } else {
+        card.classList.remove('selected');
+        if (check) check.textContent = '';
+      }
+    });
+  }
+
+  function updateTopicPresetChips() {
+    const chips = document.querySelectorAll('#topic-preset-bar .preset-chip');
+    chips.forEach(c => c.classList.remove('active'));
+
+    if (selectedTopics.size === TOPICS.length) {
+      document.querySelector('#topic-preset-bar .preset-chip[data-topic-preset="all"]')?.classList.add('active');
+    }
+  }
+
+  function applyTopicPreset(preset) {
+    selectedTopics.clear();
+    document.querySelectorAll('#topic-preset-bar .preset-chip').forEach(c => c.classList.remove('active'));
+    document.querySelector(`#topic-preset-bar .preset-chip[data-topic-preset="${preset}"]`)?.classList.add('active');
+
+    if (preset === 'all') {
+      TOPICS.forEach(t => selectedTopics.add(t.id));
+    } else if (preset === 'core-cs') {
+      ['Data Structures & Algorithms', 'Operating Systems', 'Computer Networks', 'Database Management Systems', 'Theory of Computation'].forEach(t => selectedTopics.add(t));
+    } else if (preset === 'systems') {
+      ['Operating Systems', 'Computer Networks', 'Computer Architecture & Digital Logic'].forEach(t => selectedTopics.add(t));
+    } else if (preset === 'mgmt') {
+      ['Management & Business Systems'].forEach(t => selectedTopics.add(t));
+    } else if (preset === 'coding') {
+      ['Programming & OOP', 'Software Engineering & Testing'].forEach(t => selectedTopics.add(t));
+    }
+
+    updateTopicUI();
+    updateSelectionSummary();
+  }
+
+  /* --------------------------------------------------------------------------
      Page Chunks (Multiples of 50) & Selection UI
      -------------------------------------------------------------------------- */
   function renderChunkGrid() {
@@ -189,8 +337,20 @@ window.App = (function () {
   }
 
   function setupSettingsControls() {
-    // Presets
-    document.querySelectorAll('.preset-chip').forEach(chip => {
+    // Mode tabs: Select by Topic vs Select by Page Range
+    document.getElementById('tab-select-topic')?.addEventListener('click', () => setSelectionType('topic'));
+    document.getElementById('tab-select-page')?.addEventListener('click', () => setSelectionType('page'));
+
+    // Topic Presets
+    document.querySelectorAll('#topic-preset-bar .preset-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const preset = chip.dataset.topicPreset;
+        applyTopicPreset(preset);
+      });
+    });
+
+    // Page Range Presets
+    document.querySelectorAll('#panel-select-page .preset-chip').forEach(chip => {
       chip.addEventListener('click', () => {
         const preset = chip.dataset.preset;
         applyPreset(preset);
@@ -243,6 +403,7 @@ window.App = (function () {
     }
 
     const config = {
+      selectionType: 'page',
       ranges: [{ start: 1, end: 400 }],
       pageRangeDesc: 'Exam Simulation (100 Questions • 2h)',
       jumbleQuestions: true,
@@ -267,8 +428,8 @@ window.App = (function () {
 
     selectedChunks.clear();
 
-    document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-    document.querySelector(`.preset-chip[data-preset="${preset}"]`)?.classList.add('active');
+    document.querySelectorAll('#panel-select-page .preset-chip').forEach(c => c.classList.remove('active'));
+    document.querySelector(`#panel-select-page .preset-chip[data-preset="${preset}"]`)?.classList.add('active');
 
     if (preset === '1-50') {
       selectedChunks.add(0);
@@ -315,7 +476,7 @@ window.App = (function () {
     selectedChunks.clear();
     updateChunkUI();
 
-    document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('#panel-select-page .preset-chip').forEach(c => c.classList.remove('active'));
     updateSelectionSummary();
   }
 
@@ -343,22 +504,46 @@ window.App = (function () {
 
   function updateSelectionSummary() {
     const all = window.COMPREHENSIVE_QUESTIONS || [];
-    const ranges = getActiveRanges();
     const countSummary = document.getElementById('selection-summary-count');
     const pagesSummary = document.getElementById('selection-summary-pages');
     const startBtn = document.getElementById('btn-start-quiz');
 
-    let matchingQuestions = all.filter(q => {
-      return ranges.some(r => q.page >= r.start && q.page <= r.end);
-    });
+    let matchingQuestions = [];
+    let scopeDesc = '';
+
+    if (selectionType === 'topic') {
+      if (selectedTopics.size === 0) {
+        scopeDesc = 'No topics selected';
+        matchingQuestions = [];
+      } else {
+        const topicSet = selectedTopics;
+        matchingQuestions = all.filter(q => topicSet.has(q.topic));
+        if (selectedTopics.size === TOPICS.length) {
+          scopeDesc = 'All Topics (10 Selected)';
+        } else if (selectedTopics.size === 1) {
+          const single = Array.from(selectedTopics)[0];
+          scopeDesc = `Topic: ${single}`;
+        } else {
+          scopeDesc = `${selectedTopics.size} Topics Selected`;
+        }
+      }
+    } else {
+      const ranges = getActiveRanges();
+      matchingQuestions = all.filter(q => {
+        return ranges.some(r => q.page >= r.start && q.page <= r.end);
+      });
+      scopeDesc = `${getPageRangeDescription()} selected`;
+    }
 
     const totalAvailable = matchingQuestions.length;
-    const pageDesc = getPageRangeDescription();
-
-    if (pagesSummary) pagesSummary.textContent = `${pageDesc} selected`;
+    if (pagesSummary) pagesSummary.textContent = scopeDesc;
 
     if (totalAvailable === 0) {
-      if (countSummary) countSummary.textContent = '0 questions available';
+      if (countSummary) {
+        countSummary.textContent = selectionType === 'topic' 
+          ? '0 questions available (select at least one topic)' 
+          : '0 questions available (select at least one page)';
+      }
       if (startBtn) startBtn.disabled = true;
       return;
     }
@@ -372,7 +557,8 @@ window.App = (function () {
     }
 
     if (countSummary) {
-      countSummary.innerHTML = `<strong>${willTake}</strong> test questions (${totalAvailable} in range)`;
+      const scopeLabel = selectionType === 'topic' ? 'in selected topics' : 'in range';
+      countSummary.innerHTML = `<strong>${willTake}</strong> test questions (${totalAvailable} ${scopeLabel})`;
     }
     if (startBtn) startBtn.disabled = false;
   }
@@ -396,12 +582,6 @@ window.App = (function () {
   });
 
   function handleStartQuiz() {
-    const ranges = getActiveRanges();
-    if (ranges.length === 0) {
-      alert('Please select at least one page chunk or a custom page range.');
-      return;
-    }
-
     const jumbleQ = document.getElementById('toggle-jumble-questions')?.checked ?? true;
     const jumbleO = document.getElementById('toggle-jumble-options')?.checked ?? false;
 
@@ -417,16 +597,56 @@ window.App = (function () {
       timerType = 'none';
     }
 
-    const config = {
-      ranges: ranges,
-      pageRangeDesc: getPageRangeDescription(),
-      jumbleQuestions: jumbleQ,
-      jumbleOptions: jumbleO,
-      countLimit: selectedCountLimit,
-      mode: selectedMode,
-      timerType: timerType,
-      countdownSeconds: countdownSecs
-    };
+    let config = null;
+
+    if (selectionType === 'topic') {
+      if (selectedTopics.size === 0) {
+        alert('Please select at least one topic to start the quiz.');
+        return;
+      }
+
+      let desc = '';
+      if (selectedTopics.size === TOPICS.length) {
+        desc = 'All Topics';
+      } else if (selectedTopics.size === 1) {
+        desc = Array.from(selectedTopics)[0];
+      } else {
+        desc = `${selectedTopics.size} Topics (${Array.from(selectedTopics).map(t => {
+          const found = TOPICS.find(tp => tp.id === t);
+          return found ? found.short : t.slice(0, 4);
+        }).join(', ')})`;
+      }
+
+      config = {
+        selectionType: 'topic',
+        topics: Array.from(selectedTopics),
+        pageRangeDesc: desc,
+        jumbleQuestions: jumbleQ,
+        jumbleOptions: jumbleO,
+        countLimit: selectedCountLimit,
+        mode: selectedMode,
+        timerType: timerType,
+        countdownSeconds: countdownSecs
+      };
+    } else {
+      const ranges = getActiveRanges();
+      if (ranges.length === 0) {
+        alert('Please select at least one page chunk or a custom page range.');
+        return;
+      }
+
+      config = {
+        selectionType: 'page',
+        ranges: ranges,
+        pageRangeDesc: getPageRangeDescription(),
+        jumbleQuestions: jumbleQ,
+        jumbleOptions: jumbleO,
+        countLimit: selectedCountLimit,
+        mode: selectedMode,
+        timerType: timerType,
+        countdownSeconds: countdownSecs
+      };
+    }
 
     if (window.QuizModule) {
       setQuizActive(true);  // arm the exit guard

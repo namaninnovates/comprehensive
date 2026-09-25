@@ -308,6 +308,126 @@ body {
   font-weight: 600;
 }
 
+/* Selection Mode Switcher (By Topic vs By Page Range) */
+.selector-tabs {
+  display: flex;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  margin-bottom: 1.15rem;
+  gap: 3px;
+}
+
+.selector-tab-btn {
+  flex: 1;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  border-radius: calc(var(--radius-sm) - 2px);
+  cursor: pointer;
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.selector-tab-btn:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.selector-tab-btn.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Topic Selection Grid */
+.topic-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 600px) {
+  .topic-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.topic-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.75rem;
+  cursor: pointer;
+  color: var(--text);
+  transition: all var(--transition);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  user-select: none;
+  gap: 0.5rem;
+}
+
+.topic-card:hover {
+  border-color: var(--border-focus);
+  background: var(--surface-hover);
+}
+
+.topic-card.selected {
+  border-color: var(--text);
+  background: var(--primary-bg);
+}
+
+.topic-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.topic-name {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.25;
+}
+
+.topic-count {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.topic-check-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition);
+  font-size: 0.7rem;
+  color: transparent;
+}
+
+.topic-card.selected .topic-check-icon {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+  font-weight: 800;
+}
+
 /* 50-Page Chunks */
 .chunk-grid {
   display: grid;
@@ -620,6 +740,18 @@ input:checked + .slider::before {
 .badge-mode {
   background: var(--primary-bg);
   color: var(--text);
+}
+
+.badge-topic {
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #818cf8;
+}
+
+[data-theme="light"] .badge-topic {
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  color: #4f46e5;
 }
 
 .timer-box {
@@ -1061,6 +1193,56 @@ input:checked + .slider::before {
   margin-top: 1.5rem;
 }
 
+/* Topic-wise Results Breakdown */
+.topic-breakdown-card {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-subtle);
+  text-align: left;
+}
+
+.topic-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+}
+
+@media (max-width: 650px) {
+  .topic-breakdown-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.topic-breakdown-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.85rem;
+}
+
+.topic-breakdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.topic-breakdown-bar {
+  height: 6px;
+  background: var(--surface-hover);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.topic-breakdown-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+
 /* Review List */
 .review-filter-bar {
   max-width: 800px;
@@ -1221,7 +1403,8 @@ input:checked + .slider::before {
   border-color: var(--border-focus);
 }
 
-.bank-page-filter {
+.bank-page-filter,
+.bank-filter-select {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -1229,6 +1412,9 @@ input:checked + .slider::before {
   color: var(--text);
   font-size: 0.88rem;
   cursor: pointer;
+}
+.bank-filter-select {
+  max-width: 270px;
 }
 
 .bank-list {

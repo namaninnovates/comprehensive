@@ -78,8 +78,14 @@ def extract_all():
             if f and f not in [(1.0, 1.0, 1.0), (0.0, 0.0, 0.0)]:
                 r = d['rect']
                 if r.width > 5 and r.height > 4 and r.width < 550 and r.height < 300:
+                    red, green, blue = f[0], f[1], f[2]
+                    # Skip red strikeout highlights (used in PDF to mark wrong answers)
+                    if red > 0.8 and green < 0.4 and blue < 0.4:
+                        continue
                     txt = page.get_text('text', clip=r).strip()
-                    colored_rects.append({'rect': r, 'fill': f, 'text': txt})
+                    # Check if this is a priority green correction (light green)
+                    is_correction = (0.35 < red < 0.6 and green > 0.85 and 0.25 < blue < 0.55)
+                    colored_rects.append({'rect': r, 'fill': f, 'text': txt, 'is_correction': is_correction})
                     
         page_images = page.get_image_info()
         
@@ -157,15 +163,18 @@ def extract_all():
             raw_lines = [l.strip() for l in item['opt_raw'].split('\n') if l.strip()]
             opts = raw_lines if raw_lines else ["Option 1", "Option 2", "Option 3", "Option 4"]
             
-        correct_idx = -1
-        hl_texts = [h['text'].strip() for h in item['highlights'] if h['text'].strip()]
+        # Sort highlights so light green corrections have highest priority
+        sorted_hl = sorted(item['highlights'], key=lambda h: 0 if h.get('is_correction') else 1)
+        hl_texts = [h['text'].strip() for h in sorted_hl if h['text'].strip()]
         
         # 1. Direct text match with options
-        for o_i, opt in enumerate(opts):
-            opt_lower = opt.lower()
-            for ht in hl_texts:
-                ht_lower = ht.lower()
-                if ht_lower and (ht_lower == opt_lower or ht_lower in opt_lower or (len(opt_lower) > 4 and opt_lower in ht_lower)):
+        for ht in hl_texts:
+            ht_lower = ht.lower()
+            if not ht_lower:
+                continue
+            for o_i, opt in enumerate(opts):
+                opt_lower = opt.lower()
+                if ht_lower == opt_lower or ht_lower in opt_lower or (len(opt_lower) > 4 and opt_lower in ht_lower):
                     correct_idx = o_i
                     break
             if correct_idx != -1:
@@ -183,16 +192,47 @@ def extract_all():
                         
         if correct_idx == -1 or correct_idx >= len(opts):
             correct_idx = 0
-            
-        processed.append({
-            'id': idx + 1,
+
+        # Verified Manual Overrides for questions with misprinted PDF keys
+        OVERRIDES = {
+            27: {'correctIndex': 2, 'correctAnswer': 'DDoS'},
+            36: {'correctIndex': 3, 'correctAnswer': 'Spiral Model'},
+            39: {'correctIndex': 1, 'correctAnswer': 'only a single user procedure.'},
+            72: {'correctIndex': 3, 'correctAnswer': 'Bellmen Ford Shortest path algorithm'},
+            85: {'correctIndex': 3, 'correctAnswer': 'All of these'},
+            225: {'correctIndex': 1, 'correctAnswer': 'Authentication'},
+            523: {'correctIndex': 1, 'correctAnswer': 'denser than'},
+            546: {'correctIndex': 2, 'correctAnswer': 'Temporal locality'},
+            874: {'correctIndex': 2, 'correctAnswer': "Euler's circuit problem"},
+            911: {'correctIndex': 3, 'correctAnswer': 'Support proprietary protocol'},
+            954: {'correctIndex': 3, 'correctAnswer': 'Both (b) and (c)'},
+            1180: {
+                'options': ['127.0.0.1', '255.0.0.0', '255.255.0.0', '255.255.255.0'],
+                'correctIndex': 3,
+                'correctAnswer': '255.255.255.0'
+            },
+            1239: {
+                'options': ['Bus', 'Star', 'Ring', 'Mesh'],
+                'correctIndex': 2,
+                'correctAnswer': 'Ring'
+            },
+            1317: {'correctIndex': 1, 'correctAnswer': 'child to sleep for a while, parent terminates'}
+        }
+        
+        q_id = idx + 1
+        curr_entry = {
+            'id': q_id,
             'page': item['page'],
             'question': q_clean,
             'options': opts,
             'correctIndex': correct_idx,
             'correctAnswer': opts[correct_idx],
             'image': item['image']
-        })
+        }
+        if q_id in OVERRIDES:
+            curr_entry.update(OVERRIDES[q_id])
+            
+        processed.append(curr_entry)
         
     print(f"Successfully processed {len(processed)} structured questions.")
     

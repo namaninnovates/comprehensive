@@ -70,38 +70,74 @@
       </div>
 
       <div class="setup-grid">
-        <!-- Left Column: Page Range Selector -->
+        <!-- Left Column: Topic Wise & Page Range Selector -->
         <div class="card">
-          <div class="card-title">Page Range</div>
-          <p class="card-subtitle">Choose 50-page increments, presets, or a custom range.</p>
-
-          <!-- Quick Presets -->
-          <div class="preset-bar">
-            <button class="preset-chip active" data-preset="1-50">1 – 50</button>
-            <button class="preset-chip" data-preset="1-100">1 – 100</button>
-            <button class="preset-chip" data-preset="101-200">101 – 200</button>
-            <button class="preset-chip" data-preset="201-300">201 – 300</button>
-            <button class="preset-chip" data-preset="301-400">301 – 400</button>
-            <button class="preset-chip" data-preset="101-400">101 – 400</button>
-            <button class="preset-chip" data-preset="all">All Pages</button>
-            <button class="preset-chip" data-preset="clear" style="color: var(--danger);">Clear</button>
+          <!-- Selection Mode Tabs -->
+          <div class="selector-tabs" id="selection-mode-tabs">
+            <button type="button" class="selector-tab-btn active" data-tab="topic" id="tab-select-topic">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+              Select by Topic
+            </button>
+            <button type="button" class="selector-tab-btn" data-tab="page" id="tab-select-page">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              Select by Page Range
+            </button>
           </div>
 
-          <!-- 50-Page Multiple Chunks (Clickable cards) -->
-          <div class="chunk-grid" id="chunk-grid-container">
-            <!-- Rendered dynamically by js/app.js -->
-          </div>
+          <!-- PANEL 1: SELECT BY TOPIC -->
+          <div id="panel-select-topic" class="selection-panel active">
+            <div class="card-title">Select Topics</div>
+            <p class="card-subtitle">Choose one or more subjects to focus your practice session.</p>
 
-          <!-- Custom Range Input -->
-          <div class="custom-range-box">
-            <label for="input-custom-start">Custom Range:</label>
-            <div class="range-inputs">
-              <input type="number" id="input-custom-start" class="page-num-input" min="1" max="400" placeholder="1" value="1">
-              <span style="color: var(--text-muted); font-size: 0.85rem;">to</span>
-              <input type="number" id="input-custom-end" class="page-num-input" min="1" max="400" placeholder="400" value="50">
-              <button id="btn-apply-custom-range" class="apply-range-btn">Apply</button>
+            <!-- Quick Topic Presets -->
+            <div class="preset-bar" id="topic-preset-bar">
+              <button type="button" class="preset-chip active" data-topic-preset="all">All Topics</button>
+              <button type="button" class="preset-chip" data-topic-preset="core-cs">Core CS</button>
+              <button type="button" class="preset-chip" data-topic-preset="systems">Systems</button>
+              <button type="button" class="preset-chip" data-topic-preset="mgmt">Management</button>
+              <button type="button" class="preset-chip" data-topic-preset="coding">Coding & SE</button>
+              <button type="button" class="preset-chip" data-topic-preset="clear" style="color: var(--danger);">Clear</button>
             </div>
-            <span id="range-validation-msg" style="font-size: 0.78rem; color: var(--warning); display: none;"></span>
+
+            <!-- Dynamic Topic Cards Grid -->
+            <div class="topic-grid" id="topic-grid-container">
+              <!-- Rendered dynamically by js/app.js -->
+            </div>
+          </div>
+
+          <!-- PANEL 2: SELECT BY PAGE RANGE -->
+          <div id="panel-select-page" class="selection-panel" style="display: none;">
+            <div class="card-title">Page Range</div>
+            <p class="card-subtitle">Choose 50-page increments, presets, or a custom range.</p>
+
+            <!-- Quick Presets -->
+            <div class="preset-bar">
+              <button type="button" class="preset-chip active" data-preset="1-50">1 – 50</button>
+              <button type="button" class="preset-chip" data-preset="1-100">1 – 100</button>
+              <button type="button" class="preset-chip" data-preset="101-200">101 – 200</button>
+              <button type="button" class="preset-chip" data-preset="201-300">201 – 300</button>
+              <button type="button" class="preset-chip" data-preset="301-400">301 – 400</button>
+              <button type="button" class="preset-chip" data-preset="101-400">101 – 400</button>
+              <button type="button" class="preset-chip" data-preset="all">All Pages</button>
+              <button type="button" class="preset-chip" data-preset="clear" style="color: var(--danger);">Clear</button>
+            </div>
+
+            <!-- 50-Page Multiple Chunks (Clickable cards) -->
+            <div class="chunk-grid" id="chunk-grid-container">
+              <!-- Rendered dynamically by js/app.js -->
+            </div>
+
+            <!-- Custom Range Input -->
+            <div class="custom-range-box">
+              <label for="input-custom-start">Custom Range:</label>
+              <div class="range-inputs">
+                <input type="number" id="input-custom-start" class="page-num-input" min="1" max="400" placeholder="1" value="1">
+                <span style="color: var(--text-muted); font-size: 0.85rem;">to</span>
+                <input type="number" id="input-custom-end" class="page-num-input" min="1" max="400" placeholder="400" value="50">
+                <button type="button" id="btn-apply-custom-range" class="apply-range-btn">Apply</button>
+              </div>
+              <span id="range-validation-msg" style="font-size: 0.78rem; color: var(--warning); display: none;"></span>
+            </div>
           </div>
         </div>
 
@@ -217,7 +253,10 @@
         <div class="question-main-col">
           <div class="question-card" id="active-question-card">
             <div class="question-header">
-              <span id="q-number-badge" class="question-num-tag">Question 1</span>
+              <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <span id="q-number-badge" class="question-num-tag">Question 1</span>
+                <span id="q-topic-badge" class="badge badge-topic" style="display: none;">Topic</span>
+              </div>
               <button id="btn-flag-question" class="btn-flag" title="Flag this question to review later">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
                 <span id="flag-btn-text">Flag for Review</span>
@@ -336,6 +375,15 @@
             Start New Quiz
           </button>
         </div>
+
+        <!-- Topic-wise Performance Breakdown -->
+        <div id="results-topic-breakdown" class="topic-breakdown-card" style="display: none;">
+          <div style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem;">Topic Performance</div>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.85rem;">Accuracy breakdown across topics in this session</p>
+          <div class="topic-breakdown-grid" id="topic-breakdown-container">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
       </div>
 
       <!-- Question-by-Question Review -->
@@ -400,7 +448,7 @@
             <tr>
               <th>#</th>
               <th>Date & Time</th>
-              <th>Page Range</th>
+              <th>Scope / Topic</th>
               <th>Mode</th>
               <th>Score</th>
               <th>Accuracy</th>
@@ -426,6 +474,19 @@
 
       <div class="bank-controls">
         <input type="text" id="bank-search-input" class="search-input" placeholder="Search questions, code snippets, topics, or keywords...">
+        <select id="bank-topic-filter" class="bank-filter-select" title="Filter by Topic">
+          <option value="all">All Topics (10 Topics)</option>
+          <option value="Management & Business Systems">Management & Business (286)</option>
+          <option value="Programming & OOP">Programming & OOP (200)</option>
+          <option value="Data Structures & Algorithms">Data Structures & Algorithms (160)</option>
+          <option value="Theory of Computation">Theory of Computation (156)</option>
+          <option value="Computer Networks">Computer Networks (153)</option>
+          <option value="Cyber Security & Privacy">Cyber Security & Privacy (133)</option>
+          <option value="Database Management Systems">Database Management Systems (100)</option>
+          <option value="Operating Systems">Operating Systems (99)</option>
+          <option value="Computer Architecture & Digital Logic">Computer Architecture (85)</option>
+          <option value="Software Engineering & Testing">Software Engineering & Testing (76)</option>
+        </select>
         <select id="bank-page-filter" class="bank-page-filter">
           <option value="all">All Pages (1 – 400)</option>
           <option value="1-50">Pages 1 – 50</option>

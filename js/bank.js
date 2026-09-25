@@ -10,13 +10,17 @@ window.BankModule = (function () {
 
   function init() {
     const searchInput = document.getElementById('bank-search-input');
-    const filterSelect = document.getElementById('bank-page-filter');
+    const pageFilterSelect = document.getElementById('bank-page-filter');
+    const topicFilterSelect = document.getElementById('bank-topic-filter');
 
     if (searchInput) {
       searchInput.addEventListener('input', debounce(applyFilter, 250));
     }
-    if (filterSelect) {
-      filterSelect.addEventListener('change', applyFilter);
+    if (pageFilterSelect) {
+      pageFilterSelect.addEventListener('change', applyFilter);
+    }
+    if (topicFilterSelect) {
+      topicFilterSelect.addEventListener('change', applyFilter);
     }
 
     applyFilter();
@@ -34,6 +38,7 @@ window.BankModule = (function () {
     const all = window.COMPREHENSIVE_QUESTIONS || [];
     const searchVal = (document.getElementById('bank-search-input')?.value || '').trim().toLowerCase();
     const rangeVal = document.getElementById('bank-page-filter')?.value || 'all';
+    const topicVal = document.getElementById('bank-topic-filter')?.value || 'all';
 
     let rangeStart = 1;
     let rangeEnd = 400;
@@ -46,6 +51,7 @@ window.BankModule = (function () {
 
     filteredQuestions = all.filter(q => {
       if (q.page < rangeStart || q.page > rangeEnd) return false;
+      if (topicVal !== 'all' && q.topic !== topicVal) return false;
       if (!searchVal) return true;
 
       const inQ = q.question.toLowerCase().includes(searchVal);
@@ -88,9 +94,10 @@ window.BankModule = (function () {
 
       return `
         <div class="card" style="padding: 1.5rem; margin-bottom: 0.5rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
               #${globalIdx} (ID: ${q.id}) • <span class="badge badge-page">PDF Page: ${q.page}</span>
+              ${q.topic ? `<span class="badge badge-topic" style="cursor: pointer;" title="Click to filter by this topic" onclick="BankModule.filterByTopic('${escapeHtml(q.topic)}')">${escapeHtml(q.topic)}</span>` : ''}
             </div>
             <span class="badge" style="background: var(--success-bg); color: var(--success); font-weight: 700;">
               Answer: Option ${letters[q.correctIndex] || q.correctIndex + 1}
@@ -148,6 +155,14 @@ window.BankModule = (function () {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  function filterByTopic(topicName) {
+    const filterSelect = document.getElementById('bank-topic-filter');
+    if (filterSelect) {
+      filterSelect.value = topicName;
+      applyFilter();
+    }
+  }
+
   function formatQuestionText(raw) {
     if (!raw) return '';
     const codePatterns = [
@@ -179,6 +194,7 @@ window.BankModule = (function () {
   return {
     init,
     applyFilter,
+    filterByTopic,
     changePage
   };
 })();

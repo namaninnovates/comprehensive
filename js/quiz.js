@@ -92,13 +92,21 @@ window.QuizModule = (function () {
       return;
     }
 
-    // Filter questions matching selected page ranges
-    let matched = allQuestions.filter(q => {
-      return config.ranges.some(r => q.page >= r.start && q.page <= r.end);
-    });
+    // Filter questions: either by topic or by page ranges
+    let matched = [];
+    if (config.selectionType === 'topic' && config.topics && config.topics.length > 0) {
+      const topicSet = new Set(config.topics);
+      matched = allQuestions.filter(q => topicSet.has(q.topic));
+    } else if (config.ranges && config.ranges.length > 0) {
+      matched = allQuestions.filter(q => {
+        return config.ranges.some(r => q.page >= r.start && q.page <= r.end);
+      });
+    } else {
+      matched = allQuestions;
+    }
 
     if (matched.length === 0) {
-      alert('No questions found for the selected page range.');
+      alert('No questions found for the selected criteria.');
       return;
     }
 
@@ -243,6 +251,7 @@ window.QuizModule = (function () {
 
     // Badges & Labels
     const numBadge = document.getElementById('q-number-badge');
+    const topicBadge = document.getElementById('q-topic-badge');
     const qPageBadge = document.getElementById('quiz-badge-qpage');
     const statementElem = document.getElementById('q-statement');
     const progressLabel = document.getElementById('quiz-progress-label');
@@ -252,6 +261,14 @@ window.QuizModule = (function () {
     const flagBtnText = document.getElementById('flag-btn-text');
 
     if (numBadge) numBadge.textContent = `Question ${index + 1} of ${total}`;
+    if (topicBadge) {
+      if (q.topic) {
+        topicBadge.textContent = q.topic;
+        topicBadge.style.display = 'inline-flex';
+      } else {
+        topicBadge.style.display = 'none';
+      }
+    }
     if (qPageBadge) qPageBadge.textContent = `PDF Page: ${q.page}`;
     if (statementElem) statementElem.innerHTML = formatQuestionText(q.question);
 
@@ -521,6 +538,7 @@ window.QuizModule = (function () {
       return {
         questionId: q.id,
         page: q.page,
+        topic: q.topic || 'General',
         question: q.question,
         options: q.options,
         correctIndex: q.correctIndex,
@@ -603,6 +621,9 @@ window.QuizModule = (function () {
       retakeMissedBtn.disabled = missedTotal === 0;
     }
 
+    // Render topic-wise performance breakdown
+    renderTopicBreakdown(result);
+
     // Render detailed review list
     currentDisplayedResult = result;
     renderReviewQuestions('all');
@@ -611,6 +632,54 @@ window.QuizModule = (function () {
     if (window.App) {
       window.App.switchView('results');
     }
+  }
+
+  function renderTopicBreakdown(result) {
+    const card = document.getElementById('results-topic-breakdown');
+    const container = document.getElementById('topic-breakdown-container');
+    if (!card || !container) return;
+
+    if (!result.items || result.items.length === 0) {
+      card.style.display = 'none';
+      return;
+    }
+
+    const topicStats = {};
+    result.items.forEach(it => {
+      const t = it.topic || 'General';
+      if (!topicStats[t]) {
+        topicStats[t] = { total: 0, correct: 0, incorrect: 0, skipped: 0 };
+      }
+      topicStats[t].total++;
+      if (it.isCorrect) topicStats[t].correct++;
+      else if (it.isSkipped) topicStats[t].skipped++;
+      else topicStats[t].incorrect++;
+    });
+
+    const topicKeys = Object.keys(topicStats).sort((a, b) => topicStats[b].total - topicStats[a].total);
+
+    container.innerHTML = topicKeys.map(topic => {
+      const s = topicStats[topic];
+      const pct = Math.round((s.correct / s.total) * 100);
+      let fillColor = 'var(--primary)';
+      if (pct >= 80) fillColor = 'var(--success)';
+      else if (pct >= 50) fillColor = 'var(--warning)';
+      else fillColor = 'var(--danger)';
+
+      return `
+        <div class="topic-breakdown-item">
+          <div class="topic-breakdown-header">
+            <span>${escapeHtml(topic)}</span>
+            <span style="color: ${fillColor}; font-weight: 700;">${s.correct}/${s.total} (${pct}%)</span>
+          </div>
+          <div class="topic-breakdown-bar">
+            <div class="topic-breakdown-fill" style="width: ${pct}%; background: ${fillColor};"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    card.style.display = 'block';
   }
 
   let currentDisplayedResult = null;
@@ -677,8 +746,9 @@ window.QuizModule = (function () {
       return `
         <div class="review-item ${statusClass}">
           <div class="review-item-header">
-            <div>
+            <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
               <strong>#${idx + 1}</strong> • <span class="badge badge-page">PDF Page: ${it.page}</span>
+              ${it.topic ? `<span class="badge badge-topic">${escapeHtml(it.topic)}</span>` : ''}
               ${it.isFlagged ? '<span class="badge" style="background:var(--warning-bg); color:var(--warning);">★ Flagged</span>' : ''}
             </div>
             <div>${statusBadge}</div>
@@ -737,6 +807,7 @@ window.QuizModule = (function () {
       return {
         id: m.questionId,
         page: m.page,
+        topic: m.topic || 'General',
         question: m.question,
         options: m.options,
         correctIndex: m.correctIndex,
