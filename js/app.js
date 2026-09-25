@@ -81,6 +81,9 @@ window.App = (function () {
     if (window.BankModule) {
       window.BankModule.init();
     }
+    if (window.ReportModule) {
+      window.ReportModule.init();
+    }
 
     updateSelectionSummary();
   }
@@ -672,6 +675,10 @@ window.App = (function () {
 
     document.getElementById('btn-flag-question')?.addEventListener('click', () => {
       window.QuizModule?.toggleFlag();
+    });
+
+    document.getElementById('btn-report-question')?.addEventListener('click', () => {
+      window.QuizModule?.reportCurrentQuestion();
     });
 
     document.getElementById('btn-submit-exam')?.addEventListener('click', () => {

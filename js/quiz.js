@@ -424,6 +424,13 @@ window.QuizModule = (function () {
     updatePaletteState();
   }
 
+  function reportCurrentQuestion() {
+    const q = session.questions[session.currentIndex];
+    if (q && window.ReportModule) {
+      window.ReportModule.openReportModal(q);
+    }
+  }
+
   function nextQuestion() {
     if (session.currentIndex < session.questions.length - 1) {
       renderQuestion(session.currentIndex + 1);
@@ -751,7 +758,13 @@ window.QuizModule = (function () {
               ${it.topic ? `<span class="badge badge-topic">${escapeHtml(it.topic)}</span>` : ''}
               ${it.isFlagged ? '<span class="badge" style="background:var(--warning-bg); color:var(--warning);">★ Flagged</span>' : ''}
             </div>
-            <div>${statusBadge}</div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <button class="btn-report" onclick="ReportModule.openReportModalById('${it.questionId}')" title="Report issue with question #${it.questionId}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                <span>Report</span>
+              </button>
+              ${statusBadge}
+            </div>
           </div>
 
           <div class="question-text" style="font-size: 1.05rem; margin-bottom: 0.85rem;">
@@ -870,6 +883,7 @@ window.QuizModule = (function () {
     selectOption,
     clearAnswer,
     toggleFlag,
+    reportCurrentQuestion,
     nextQuestion,
     prevQuestion,
     jumpToQuestion,

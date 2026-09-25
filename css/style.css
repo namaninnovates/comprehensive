@@ -845,6 +845,26 @@ input:checked + .slider::before {
   color: var(--warning);
 }
 
+.btn-report {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: var(--transition);
+}
+
+.btn-report:hover {
+  color: var(--warning);
+  border-color: var(--warning);
+  background: rgba(245, 158, 11, 0.1);
+}
+
 .question-text {
   font-size: 1.05rem;
   font-weight: 600;
@@ -1447,6 +1467,68 @@ input:checked + .slider::before {
   max-width: 420px;
   width: 100%;
   box-shadow: var(--shadow-popup);
+}
+
+.modal-content.modal-lg {
+  max-width: 650px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: var(--text);
+}
+
+.form-control {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.75rem;
+  color: var(--text);
+  font-size: 0.88rem;
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-glow);
+}
+
+.status-msg {
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  margin-top: 0.75rem;
+  display: none;
+}
+
+.status-msg.success {
+  background: var(--success-bg);
+  border: 1px solid var(--success);
+  color: var(--success);
+}
+
+.status-msg.info {
+  background: var(--info-bg);
+  border: 1px solid var(--info);
+  color: var(--info);
+}
+
+.status-msg.error {
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  color: var(--danger);
 }
 
 .modal-title {
