@@ -49,16 +49,47 @@ window.App = (function () {
     return div.innerHTML;
   }
 
+  const OFFLINE_DB_KEY = 'faceit_offline_db_v1';
+
   async function ensureQuestionsLoaded() {
-    // questions.js is loaded via <script> tag and populates window.COMPREHENSIVE_QUESTIONS
+    // 1. Check if window.COMPREHENSIVE_QUESTIONS exists from data/questions.js
     if (window.COMPREHENSIVE_QUESTIONS && window.COMPREHENSIVE_QUESTIONS.length > 0) {
+      try {
+        localStorage.setItem(OFFLINE_DB_KEY, JSON.stringify(window.COMPREHENSIVE_QUESTIONS));
+      } catch (e) {}
       return true;
     }
+
+    // 2. Fallback to localStorage offline database backup
+    try {
+      const cachedDb = localStorage.getItem(OFFLINE_DB_KEY);
+      if (cachedDb) {
+        window.COMPREHENSIVE_QUESTIONS = JSON.parse(cachedDb);
+        console.log(`[OfflineDB] Successfully loaded ${window.COMPREHENSIVE_QUESTIONS.length} questions from offline storage.`);
+        return true;
+      }
+    } catch (e) {
+      console.error('Error reading offline question database from localStorage:', e);
+    }
+
     console.error('Question bank not loaded. Ensure data/questions.js is present.');
     return false;
   }
 
+  function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+          console.log('[ServiceWorker] Active & caching for 100% offline access:', reg.scope);
+        }).catch((err) => {
+          console.warn('[ServiceWorker] Registration failed:', err);
+        });
+      });
+    }
+  }
+
   async function init() {
+    registerServiceWorker();
     initTheme();
     setupNavigation();
     setupSettingsControls();
