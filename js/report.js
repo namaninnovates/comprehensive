@@ -1,14 +1,24 @@
 /**
  * Comprehensive Exam Quiz System - Report Question Module
  * Handles reporting question issues across Test/Practice, Review, and Question Bank.
- * Supports LocalStorage collection, GitHub Issue pre-fill, Clipboard copy, & Webhook dispatch.
+ * Supports LocalStorage collection, Webhooks, and LIVE Reading/Writing from GitHub Issues API.
  */
 
 window.ReportModule = (function () {
   const STORAGE_KEY = 'faceit_question_reports';
   const WEBHOOK_KEY = 'faceit_webhook_url';
-  let activeQuestion = null;
+  const GITHUB_REPO = 'namaninnovates/comprehensive';
+  const GITHUB_CACHE_KEY = 'faceit_github_issues_cache';
 
+  let activeQuestion = null;
+  let githubIssues = [];
+  let githubIssuesMap = {}; // qId -> array of issues
+  let currentGhFilter = 'open';
+  let activeTab = 'github';
+
+  /* --------------------------------------------------------------------------
+     Local Reports Management
+     -------------------------------------------------------------------------- */
   function getReports() {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
@@ -44,16 +54,143 @@ window.ReportModule = (function () {
 
   function updateReportBadge() {
     const badge = document.getElementById('nav-reports-badge');
-    if (!badge) return;
-    const reports = getReports();
-    if (reports.length > 0) {
-      badge.textContent = reports.length;
-      badge.style.display = 'inline-block';
-    } else {
-      badge.style.display = 'none';
+    const ghTabBadge = document.getElementById('gh-issues-tab-badge');
+    
+    const localCount = getReports().length;
+    const ghOpenCount = githubIssues.filter(i => i.state === 'open').length;
+    const totalCount = localCount + ghOpenCount;
+
+    if (badge) {
+      if (totalCount > 0) {
+        badge.textContent = totalCount;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    if (ghTabBadge) {
+      ghTabBadge.textContent = ghOpenCount;
     }
   }
 
+  /* --------------------------------------------------------------------------
+     GitHub Issues API Integration (READING FROM GITHUB)
+     -------------------------------------------------------------------------- */
+  function loadCachedGitHubIssues() {
+    try {
+      const cached = localStorage.getItem(GITHUB_CACHE_KEY);
+      if (cached) {
+        githubIssues = JSON.parse(cached);
+        buildGitHubIssuesMap();
+        updateReportBadge();
+      }
+    } catch (e) {}
+  }
+
+  async function fetchGitHubIssues() {
+    loadCachedGitHubIssues();
+    const statusText = document.getElementById('github-issues-status');
+    if (statusText) statusText.textContent = `Syncing with github.com/${GITHUB_REPO}...`;
+
+    const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/issues?state=all&per_page=100`;
+    try {
+      const res = await fetch(apiUrl, {
+        headers: { 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (!res.ok) throw new Error(`GitHub API returned ${res.status}`);
+      const data = await res.json();
+      
+      // Filter out PRs if any
+      githubIssues = data.filter(item => !item.pull_request).map(issue => {
+        const parsedQId = parseQuestionIdFromIssue(issue);
+        const parsedCategory = parseCategoryFromIssue(issue);
+        const parsedNotes = parseNotesFromIssue(issue);
+        return {
+          id: issue.id,
+          number: issue.number,
+          title: issue.title,
+          state: issue.state,
+          htmlUrl: issue.html_url,
+          user: issue.user ? issue.user.login : 'anonymous',
+          userAvatar: issue.user ? issue.user.avatar_url : '',
+          createdAt: issue.created_at,
+          dateFormatted: new Date(issue.created_at).toLocaleDateString(),
+          comments: issue.comments,
+          body: issue.body || '',
+          questionId: parsedQId,
+          category: parsedCategory,
+          notes: parsedNotes
+        };
+      });
+
+      localStorage.setItem(GITHUB_CACHE_KEY, JSON.stringify(githubIssues));
+      buildGitHubIssuesMap();
+      updateReportBadge();
+      
+      if (document.getElementById('github-issues-list')) {
+        renderGitHubIssuesList();
+      }
+
+      // Refresh Question Bank / Review list badges if rendered
+      if (window.BankModule && window.BankModule.applyFilter) {
+        window.BankModule.applyFilter();
+      }
+    } catch (e) {
+      console.warn('Could not fetch GitHub issues:', e);
+      if (statusText) {
+        statusText.textContent = `Using cached issues (${githubIssues.length} issues loaded offline).`;
+      }
+    }
+  }
+
+  function parseQuestionIdFromIssue(issue) {
+    // 1. Title match: e.g. "[Question Report] Issue in Question #1223 (Page 341)"
+    const titleMatch = issue.title.match(/Question\s*#?(\d+)/i);
+    if (titleMatch) return titleMatch[1];
+    
+    // 2. Body match: e.g. "- **Question ID:** #1223"
+    if (issue.body) {
+      const bodyMatch = issue.body.match(/Question\s*ID:?\s*\*?\*?\s*#?(\d+)/i);
+      if (bodyMatch) return bodyMatch[1];
+    }
+    return null;
+  }
+
+  function parseCategoryFromIssue(issue) {
+    if (!issue.body) return 'Reported Issue';
+    const match = issue.body.match(/Report\s*Category:?\s*\*?\*?\s*([^\n\r]+)/i);
+    return match ? match[1].replace(/<!--.*-->/, '').trim() : 'Reported Issue';
+  }
+
+  function parseNotesFromIssue(issue) {
+    if (!issue.body) return '';
+    const match = issue.body.match(/###\s*Description[^\n]*\n+([\s\S]*?)(?:\n---|\n###|$)/i);
+    return match ? match[1].trim() : '';
+  }
+
+  function buildGitHubIssuesMap() {
+    githubIssuesMap = {};
+    githubIssues.forEach(issue => {
+      if (issue.questionId) {
+        const qId = String(issue.questionId);
+        if (!githubIssuesMap[qId]) githubIssuesMap[qId] = [];
+        githubIssuesMap[qId].push(issue);
+      }
+    });
+  }
+
+  function getQuestionGitHubIssues(qId) {
+    return githubIssuesMap[String(qId)] || [];
+  }
+
+  function getGitHubIssues() {
+    return githubIssues;
+  }
+
+  /* --------------------------------------------------------------------------
+     Report Submission Logic (WRITING TO GITHUB ISSUES)
+     -------------------------------------------------------------------------- */
   function findQuestionById(qId) {
     const all = window.COMPREHENSIVE_QUESTIONS || [];
     return all.find(q => String(q.id) === String(qId)) || null;
@@ -225,7 +362,7 @@ window.ReportModule = (function () {
     }
 
     // 3. Construct GitHub Issue URL
-    const repoUrl = 'https://github.com/namaninnovates/comprehensive';
+    const repoUrl = `https://github.com/${GITHUB_REPO}`;
     const issueTitle = `[Question Report] Issue in Question #${payload.questionId} (Page ${payload.page})`;
     
     const issueBody = `### Question Issue Report
@@ -259,6 +396,8 @@ ${payload.details || 'No additional details provided.'}
 
     setTimeout(() => {
       closeReportModal();
+      // Re-fetch GitHub issues after 3 seconds in case user submitted it
+      setTimeout(fetchGitHubIssues, 3000);
     }, 1500);
   }
 
@@ -287,13 +426,15 @@ User Notes: ${payload.details || 'None'}`;
   }
 
   /* --------------------------------------------------------------------------
-     Report Manager Drawer / Modal (Admin View)
+     Report Manager Modal & Renderers
      -------------------------------------------------------------------------- */
   function openReportManagerModal() {
     const modal = document.getElementById('report-manager-modal');
     if (!modal) return;
-    renderReportManagerList();
     
+    switchReportTab(activeTab);
+    fetchGitHubIssues();
+
     // Fill webhook input
     const webhookInput = document.getElementById('report-webhook-input');
     if (webhookInput) webhookInput.value = getWebhookUrl();
@@ -306,6 +447,115 @@ User Notes: ${payload.details || 'None'}`;
     if (modal) modal.classList.remove('active');
   }
 
+  function switchReportTab(tabName) {
+    activeTab = tabName;
+    const tabGh = document.getElementById('tab-report-github');
+    const tabLocal = document.getElementById('tab-report-local');
+    const panelGh = document.getElementById('panel-report-github');
+    const panelLocal = document.getElementById('panel-report-local');
+
+    if (tabName === 'github') {
+      if (tabGh) tabGh.classList.add('active');
+      if (tabLocal) tabLocal.classList.remove('active');
+      if (panelGh) panelGh.style.display = 'block';
+      if (panelLocal) panelLocal.style.display = 'none';
+      renderGitHubIssuesList();
+    } else {
+      if (tabLocal) tabLocal.classList.add('active');
+      if (tabGh) tabGh.classList.remove('active');
+      if (panelLocal) panelLocal.style.display = 'block';
+      if (panelGh) panelGh.style.display = 'none';
+      renderReportManagerList();
+    }
+  }
+
+  function filterGitHubIssues(state) {
+    currentGhFilter = state;
+    ['open', 'closed', 'all'].forEach(s => {
+      const chip = document.getElementById(`gh-chip-${s}`);
+      if (chip) {
+        if (s === state) chip.classList.add('active');
+        else chip.classList.remove('active');
+      }
+    });
+    renderGitHubIssuesList();
+  }
+
+  function renderGitHubIssuesList() {
+    const container = document.getElementById('github-issues-list');
+    const statusText = document.getElementById('github-issues-status');
+    if (!container) return;
+
+    let items = githubIssues;
+
+    if (currentGhFilter === 'open') {
+      items = items.filter(i => i.state === 'open');
+    } else if (currentGhFilter === 'closed') {
+      items = items.filter(i => i.state === 'closed');
+    }
+
+    const searchVal = (document.getElementById('github-issues-search')?.value || '').trim().toLowerCase();
+
+    if (searchVal) {
+      items = items.filter(i => {
+        const matchTitle = i.title.toLowerCase().includes(searchVal);
+        const matchQId = i.questionId && String(i.questionId).includes(searchVal);
+        const matchBody = i.body.toLowerCase().includes(searchVal);
+        const matchUser = i.user.toLowerCase().includes(searchVal);
+        return matchTitle || matchQId || matchBody || matchUser;
+      });
+    }
+
+    if (statusText) {
+      const openCount = githubIssues.filter(i => i.state === 'open').length;
+      statusText.innerHTML = `Synced with <a href="https://github.com/${GITHUB_REPO}/issues" target="_blank" rel="noopener noreferrer" style="color:var(--primary); font-weight:600;">github.com/${GITHUB_REPO}</a> • <strong>${openCount} Open Issue${openCount === 1 ? '' : 's'}</strong> (${githubIssues.length} total)`;
+    }
+
+    if (items.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <p>No GitHub issues found matching "${currentGhFilter}" filter.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = items.map(issue => {
+      const isOpen = issue.state === 'open';
+      const stateBadge = isOpen
+        ? `<span class="badge" style="background: var(--success-bg); color: var(--success); font-weight: 700;">🟢 Open #${issue.number}</span>`
+        : `<span class="badge" style="background: var(--danger-bg); color: var(--danger); font-weight: 700;">🔴 Closed #${issue.number}</span>`;
+
+      return `
+        <div class="card" style="padding: 1rem; margin-bottom: 0.75rem; border: 1px solid var(--border-color);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+              ${stateBadge}
+              ${issue.questionId ? `<span class="badge badge-topic" style="cursor: pointer;" onclick="ReportModule.showQuestionInBank('${issue.questionId}')" title="Click to view Question #${issue.questionId} in Question Bank">Question #${issue.questionId}</span>` : ''}
+              <a href="${issue.htmlUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--text); text-decoration: none; font-weight: 700;">
+                ${escapeHtml(issue.title)}
+              </a>
+            </div>
+            <a href="${issue.htmlUrl}" target="_blank" rel="noopener noreferrer" class="action-btn" style="padding: 0.25rem 0.65rem; font-size: 0.78rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;">
+              <span>View & Reply on GitHub</span> ↗
+            </a>
+          </div>
+
+          ${issue.notes ? `
+            <div style="background: var(--bg-surface); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.84rem; margin-bottom: 0.5rem; border-left: 3px solid var(--warning); white-space: pre-line;">
+              <strong>User Notes:</strong> ${escapeHtml(issue.notes)}
+            </div>
+          ` : ''}
+
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--text-muted); flex-wrap: wrap; gap: 0.5rem;">
+            <span>Reported by <strong>@${escapeHtml(issue.user)}</strong> on ${issue.dateFormatted}</span>
+            <span>${issue.comments} comment${issue.comments === 1 ? '' : 's'}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
   function renderReportManagerList() {
     const container = document.getElementById('report-manager-list');
     if (!container) return;
@@ -314,7 +564,7 @@ User Notes: ${payload.details || 'None'}`;
     if (reports.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
-          <p>No questions have been reported yet.</p>
+          <p>No local browser reports saved.</p>
         </div>
       `;
       return;
@@ -354,6 +604,20 @@ User Notes: ${payload.details || 'None'}`;
     }).join('');
   }
 
+  function showQuestionInBank(qId) {
+    closeReportManagerModal();
+    if (window.App && window.App.switchView) {
+      window.App.switchView('bank');
+    }
+    const searchInput = document.getElementById('bank-search-input');
+    if (searchInput) {
+      searchInput.value = `ID: ${qId}`;
+      if (window.BankModule && window.BankModule.applyFilter) {
+        window.BankModule.applyFilter();
+      }
+    }
+  }
+
   function deleteReport(reportId) {
     let reports = getReports();
     reports = reports.filter(r => r.id !== reportId);
@@ -362,7 +626,7 @@ User Notes: ${payload.details || 'None'}`;
   }
 
   function clearAllReports() {
-    if (confirm('Are you sure you want to clear all reported questions data?')) {
+    if (confirm('Are you sure you want to clear all local saved reports?')) {
       saveReports([]);
       renderReportManagerList();
     }
@@ -427,12 +691,17 @@ User Notes: ${payload.details || 'None'}`;
   }
 
   function init() {
+    loadCachedGitHubIssues();
     updateReportBadge();
+    fetchGitHubIssues();
   }
 
   return {
     init,
     getReports,
+    getGitHubIssues,
+    getQuestionGitHubIssues,
+    fetchGitHubIssues,
     openReportModal,
     openReportModalById,
     closeReportModal,
@@ -441,6 +710,10 @@ User Notes: ${payload.details || 'None'}`;
     copyReportToClipboard,
     openReportManagerModal,
     closeReportManagerModal,
+    switchReportTab,
+    filterGitHubIssues,
+    renderGitHubIssuesList,
+    showQuestionInBank,
     deleteReport,
     clearAllReports,
     saveWebhookSetting,

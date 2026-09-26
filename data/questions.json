@@ -5545,10 +5545,10 @@
     "page": 97,
     "question": "The Simple Security Condition requires that a subject\nS can read an object O only\nif _____and any DAC permits",
     "options": [
-      "Is > Io",
+      "LS > LO",
       "LO ≤ LS",
-      "L0≤ LS",
-      "Is ≤ Io"
+      "LS ≤ LO",
+      "None of the above"
     ],
     "correctIndex": 1,
     "correctAnswer": "LO ≤ LS",
@@ -7913,8 +7913,8 @@
       "2",
       "m-2"
     ],
-    "correctIndex": 1,
-    "correctAnswer": "m+2",
+    "correctIndex": 3,
+    "correctAnswer": "m-2",
     "image": null,
     "topic": "Theory of Computation"
   },
@@ -10499,13 +10499,13 @@
     "page": 185,
     "question": "A mistake in software code or configuration that provides an\nattacker with indirect access to a system or network is called as...",
     "options": [
-      "Vulnerabilit y",
+      "Vulnerability",
       "Virus",
       "Trojan Horse",
       "Exposures"
     ],
     "correctIndex": 0,
-    "correctAnswer": "Vulnerabilit y",
+    "correctAnswer": "Vulnerability",
     "image": null,
     "topic": "Cyber Security & Privacy"
   },
@@ -13705,15 +13705,15 @@
   {
     "id": 916,
     "page": 249,
-    "question": "y 2 = x 3 − 5x + 1 defined over E17. If P = (3, 9) what is – P?",
+    "question": "y² = x³ - 5x + 1 defined over E₁₇. If P = (3, 9), what is -P?",
     "options": [
-      "(3,",
-      "(3,",
-      "(3,",
+      "(3, 8)",
+      "(3, 9)",
+      "(3, 10)",
       "none of the above"
     ],
-    "correctIndex": 2,
-    "correctAnswer": "(3,",
+    "correctIndex": 0,
+    "correctAnswer": "(3, 8)",
     "image": null,
     "topic": "Cyber Security & Privacy"
   },
@@ -15094,21 +15094,6 @@
     ],
     "correctIndex": 0,
     "correctAnswer": "Mandatory Access Control",
-    "image": null,
-    "topic": "Cyber Security & Privacy"
-  },
-  {
-    "id": 1009,
-    "page": 277,
-    "question": "contro",
-    "options": [
-      "Option 1",
-      "Option 2",
-      "Option 3",
-      "Option 4"
-    ],
-    "correctIndex": 0,
-    "correctAnswer": "Option 1",
     "image": null,
     "topic": "Cyber Security & Privacy"
   },
@@ -17360,36 +17345,6 @@
     "topic": "Computer Networks"
   },
   {
-    "id": 1160,
-    "page": 322,
-    "question": "ADDRESS and HOST",
-    "options": [
-      "Option 1",
-      "Option 2",
-      "Option 3",
-      "Option 4"
-    ],
-    "correctIndex": 0,
-    "correctAnswer": "Option 1",
-    "image": null,
-    "topic": "Computer Networks"
-  },
-  {
-    "id": 1161,
-    "page": 322,
-    "question": "ADDRESS",
-    "options": [
-      "Option 1",
-      "Option 2",
-      "Option 3",
-      "Option 4"
-    ],
-    "correctIndex": 0,
-    "correctAnswer": "Option 1",
-    "image": null,
-    "topic": "Computer Networks"
-  },
-  {
     "id": 1162,
     "page": 323,
     "question": "TCP/IP ................. layer corresponds to the OSI models to three layers.",
@@ -19185,10 +19140,10 @@
       "Server",
       "Command",
       "Character",
-      "Default Which of the following is a root level label in the domain name Active directory is mainly supported by"
+      "Default"
     ],
     "correctIndex": 3,
-    "correctAnswer": "Default Which of the following is a root level label in the domain name Active directory is mainly supported by",
+    "correctAnswer": "Default",
     "image": null,
     "topic": "Computer Networks"
   },
@@ -20555,21 +20510,6 @@
     "correctIndex": 2,
     "correctAnswer": "Cartesian Product",
     "image": "data/images/q_img_384_9.png",
-    "topic": "Database Management Systems"
-  },
-  {
-    "id": 1374,
-    "page": 384,
-    "question": "declarative query language",
-    "options": [
-      "Option 1",
-      "Option 2",
-      "Option 3",
-      "Option 4"
-    ],
-    "correctIndex": 0,
-    "correctAnswer": "Option 1",
-    "image": null,
     "topic": "Database Management Systems"
   },
   {

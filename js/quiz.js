@@ -749,6 +749,12 @@ window.QuizModule = (function () {
       }
 
       const imgHtml = it.image ? `<div class="question-image-wrap"><img src="${it.image}" class="question-image" alt="Question Diagram"></div>` : '';
+      const ghIssues = window.ReportModule ? window.ReportModule.getQuestionGitHubIssues(it.questionId) : [];
+      const ghBadgeHtml = ghIssues.map(issue => `
+        <a href="${issue.htmlUrl}" target="_blank" rel="noopener noreferrer" class="badge" style="background: rgba(239, 68, 68, 0.15); color: var(--danger); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;" title="View GitHub Issue #${issue.number}">
+          <span>🚨 GitHub Issue #${issue.number} (${issue.state})</span>
+        </a>
+      `).join('');
 
       return `
         <div class="review-item ${statusClass}">
@@ -757,6 +763,7 @@ window.QuizModule = (function () {
               <strong>#${idx + 1}</strong> • <span class="badge badge-page">PDF Page: ${it.page}</span>
               ${it.topic ? `<span class="badge badge-topic">${escapeHtml(it.topic)}</span>` : ''}
               ${it.isFlagged ? '<span class="badge" style="background:var(--warning-bg); color:var(--warning);">★ Flagged</span>' : ''}
+              ${ghBadgeHtml}
             </div>
             <div style="display: flex; align-items: center; gap: 0.5rem;">
               <button class="btn-report" onclick="ReportModule.openReportModalById('${it.questionId}')" title="Report issue with question #${it.questionId}">

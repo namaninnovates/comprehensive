@@ -91,6 +91,12 @@ window.BankModule = (function () {
     const itemsHtml = items.map((q, idx) => {
       const globalIdx = startIdx + idx + 1;
       const imgHtml = q.image ? `<div class="question-image-wrap"><img src="${q.image}" class="question-image" alt="Diagram"></div>` : '';
+      const ghIssues = window.ReportModule ? window.ReportModule.getQuestionGitHubIssues(q.id) : [];
+      const ghBadgeHtml = ghIssues.map(issue => `
+        <a href="${issue.htmlUrl}" target="_blank" rel="noopener noreferrer" class="badge" style="background: rgba(239, 68, 68, 0.15); color: var(--danger); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;" title="View GitHub Issue #${issue.number}">
+          <span>🚨 GitHub Issue #${issue.number} (${issue.state})</span>
+        </a>
+      `).join('');
 
       return `
         <div class="card" style="padding: 1.5rem; margin-bottom: 0.5rem;">
@@ -98,6 +104,7 @@ window.BankModule = (function () {
             <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
               #${globalIdx} (ID: ${q.id}) • <span class="badge badge-page">PDF Page: ${q.page}</span>
               ${q.topic ? `<span class="badge badge-topic" style="cursor: pointer;" title="Click to filter by this topic" onclick="BankModule.filterByTopic('${escapeHtml(q.topic)}')">${escapeHtml(q.topic)}</span>` : ''}
+              ${ghBadgeHtml}
             </div>
             <div style="display: flex; align-items: center; gap: 0.5rem;">
               <button class="btn-report" onclick="ReportModule.openReportModalById('${q.id}')" title="Report issue with question #${q.id}">
